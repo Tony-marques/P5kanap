@@ -9,58 +9,48 @@ const result = document.querySelector(".item");
 
 // Récupérer un produit de l'API avec l'id
 async function getOneProduct() {
-  const response = await fetch(
-    `http://localhost:3000/api/products/${productId}`
-  );
-  const body = await response.json();
-  return body;
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/products/${productId}`
+    );
+    const body = await response.json();
+    return body;
+  } catch (e) {
+    alert("Il y a un problème avec le serveur, merci de réessayer plus tard")
+  }
 }
 
 // Afficher le produit
 function displayProduct(product) {
-  result.innerHTML = `
-  <article>
-  <div class="item__img">
-    <img src="${product.imageUrl}" alt="${product.altTxt}">
-  </div>
-  <div class="item__content">
+  // Création du titre
+  document.title = `${product.name}`;
 
-    <div class="item__content__titlePrice">
-      <h1 id="title">${product.name}</h1>
-      <p>Prix : <span id="price">${product.price}</span>€</p>
-    </div>
+  // Création de l'image
+  const itemImg = document.querySelector(".item__img");
+  const img = document.createElement("img");
+  img.setAttribute("src", `${product.imageUrl}`);
+  img.setAttribute("alt", `${product.altTxt}`);
+  itemImg.appendChild(img);
 
-    <div class="item__content__description">
-      <p class="item__content__description__title">Description :</p>
-      <p id="description">${product.description}</p>
-    </div>
+  // Création du h1
+  const itemContent = document.querySelector(".item__content__titlePrice");
+  const h1 = document.createElement("h1");
+  h1.textContent = `${product.name}`;
+  itemContent.appendChild(h1);
 
-    <div class="item__content__settings">
-      <div class="item__content__settings__color">
-        <label for="color-select">Choisir une couleur :</label>
-        <select name="color-select" id="colors">
-            <option value="">--SVP, choisissez une couleur --</option>
+  // Création du paragraphe prix
+  const itemPrice = document.querySelector("#price");
+  itemPrice.textContent = `${product.price}`;
 
-        </select>
-      </div>
+  // Création de la description
+  const itemDescription = document.querySelector("#description");
+  itemDescription.textContent = `${product.description}`;
 
-      <div class="item__content__settings__quantity">
-        <label for="itemQuantity">Nombre d'article(s) (1-100) :</label>
-        <input type="number" name="itemQuantity" min="1" max="100" value="0" id="quantity">
-      </div>
-    </div>
-
-    <div class="item__content__addButton">
-      
-    </div>
-
-  </div>
-</article>
-  `;
+  // Création des couleurs
   const select = document.querySelector("select");
   for (let color of product.colors) {
     const option = document.createElement("option");
-    option.innerHTML = color;
+    option.textContent = color;
     option.value = color;
     select.appendChild(option);
   }
@@ -85,9 +75,21 @@ async function createLS() {
     return item.id == product._id && item.color == select.value;
   });
   // Si l'item n'est pas encore présent dans le LS
-  if (inputQuantity.value == 0) {
-    alert("Merci de rentrer une quantité valide");
+  if (
+    (inputQuantity.value < 1 || inputQuantity.value > 100) &&
+    select.value == ""
+  ) {
+    alert(
+      "Merci de choisir une couleur et de rentrer une quantité comprise entre 1 et 100"
+    );
+  } else if (select.value == "") {
+    alert("Merci de choisir une couleur");
+  } else if (inputQuantity.value < 1 || inputQuantity.value > 100) {
+    alert("Merci de rentrer une quantité comprise entre 1 et 100");
   } else {
+    alert(
+      `Le produit ${product.name} a été ajouté au panier en ${inputQuantity.value} quantité(s)`
+    );
     if (!kanapFind) {
       kanap.push(obj);
       // Si présent dans LS avec même couleur
